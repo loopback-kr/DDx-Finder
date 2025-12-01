@@ -6,4 +6,4 @@
 #SBATCH --partition Xeon
 
 # CREATE AND RUN CONTAINER #####################################################
-docker-compose up webui mcpo
+docker-compose up webui
