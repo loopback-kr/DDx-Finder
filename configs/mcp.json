@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/mnt/data/"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "CRFinderV11": {
+      "command": "python",
+      "args": [
+        "/app/mcp/multi_db_mcp_server_v11.py"
+      ]
+    },
+    "CR_filesystem_v7": {
+      "command": "python",
+      "args": [
+        "/app/mcp/CR_filesystem_v7.py"
+      ],
+      "env":{
+            "LAB_WORK_DIR": "/mnt/data/"
+      }
+    }
+  }
+}

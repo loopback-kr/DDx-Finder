@@ -1,0 +1,54 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:v0.10.2-x86_64
+    pid: host
+    environment:
+      - TZ=Asia/Seoul
+      - TIKTOKEN_ENCODINGS_BASE=/tiktoken_encodings # https://docs.vllm.ai/projects/recipes/en/latest/OpenAI/GPT-OSS.html#troubleshooting
+    shm_size: 80GB
+    # deploy: # GPU allocation for docker
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           capabilities: [ gpu ]
+    #           count: all
+    devices: [nvidia.com/gpu=all] # GPU allocation for podman
+    expose:
+      - 8000
+    volumes:
+      - $PWD/.cache/huggingface:/root/.cache/huggingface
+      - $PWD/tiktoken_encodings:/tiktoken_encodings:ro
+      - $PWD/models:/models:ro
+    entrypoint: "vllm serve <YOUR-MODEL-PATH> --host=0.0.0.0 --port=8000 --api-key=<YOUR-API-KEY> --max-model-len=32768 --tensor-parallel-size=2 --kv-cache-dtype=auto"
+
+  webui:
+    image: ghcr.io/open-webui/open-webui:main
+    pid: host
+    environment:
+      - TZ=Asia/Seoul
+      - PYTHONDONTWRITEBYTECODE=1
+      - WEBUI_SECRET_KEY=1
+    ports:
+      - "8080:8080"
+    volumes:
+      - open-webui:/app/backend/data
+    depends_on:
+      - mcpo
+
+  mcpo:
+    build:
+      context: $PWD
+      dockerfile: mcpo.Dockerfile
+    expose:
+      - 8000
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - $PWD/configs/config_watcher.py:/app/src/mcpo/utils/config_watcher.py:ro
+      - $PWD/data:/mnt/data:ro
+      - $PWD/mcp:/app/mcp:rw
+    entrypoint: "uv run mcpo --config /app/mcp/mcp.json --hot-reload --log-level=info"
+
+volumes:
+  open-webui: {}
